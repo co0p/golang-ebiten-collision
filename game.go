@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"log"
 
@@ -43,13 +44,12 @@ func NewGame(ct string) *Game {
 	sprites := []Sprite{
 		{
 			X: 100, Y: 100,
-			Angle:             100,
-			Scale:             2,
-			Img:               crate,
-			CollisionDetected: true,
+			//Angle: 100,
+			Scale: 2,
+			Img:   crate,
 		}, {
 			X: 400, Y: 400,
-			Angle: 40,
+			//Angle: 40,
 			Scale: 1,
 			Img:   crate,
 		}, {
@@ -67,6 +67,8 @@ func NewGame(ct string) *Game {
 		Scale: 1,
 	}
 
+	fmt.Printf("using collision detection: %v\n", selectedCollisionDetection)
+
 	return &Game{
 		obstacles:     sprites,
 		player:        player,
@@ -81,17 +83,18 @@ func (g *Game) Update() error {
 	g.player.X = float64(mx)
 	g.player.Y = float64(my)
 
+	p := NewBoundingBoxFromSprite(&g.player)
+
 	// do collision
 	for _, v := range g.obstacles {
 
-		verticesObject := v.Vertices()
-		verticesPlayer := v.Vertices()
+		bb := NewBoundingBoxFromSprite(&v)
 
 		switch g.collisionType {
 		case COLLISION_AABB:
-			v.CollisionDetected = collisionDetectionAABB(verticesObject, verticesPlayer)
+			v.CollisionDetected = collisionDetectionAABB(p, bb)
 		case COLLISION_LINE:
-			v.CollisionDetected = collisionDetectionLine(verticesObject, verticesPlayer)
+			v.CollisionDetected = collisionDetectionLine(bb, p)
 		}
 	}
 

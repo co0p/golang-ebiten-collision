@@ -17,9 +17,3 @@ func (s Sprite) Width() float64 {
 func (s Sprite) Height() float64 {
 	return s.Scale * float64(s.Img.Bounds().Dy())
 }
-
-// todo
-func (s Sprite) Vertices() []vec2 {
-
-	return []vec2{}
-}
