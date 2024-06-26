@@ -4,14 +4,17 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/colorm"
+	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
+	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type Game struct {
-	obstacles     []Sprite
+	obstacles     []*Sprite
 	player        Sprite
 	collisionType collisionType
 }
@@ -20,7 +23,7 @@ type collisionType string
 
 const (
 	COLLISION_AABB collisionType = "aabb"
-	COLLISION_LINE               = "line"
+	COLLISION_LINE collisionType = "line"
 )
 
 func NewGame(ct string) *Game {
@@ -41,27 +44,26 @@ func NewGame(ct string) *Game {
 	dummy := ebiten.NewImageFromImage(img)
 
 	// create some sprites
-	sprites := []Sprite{
-		{
+	sprites := []*Sprite{
+		&Sprite{
 			X: 100, Y: 100,
-			//Angle: 100,
-			Scale: 2,
-			Img:   crate,
-		}, {
-			X: 400, Y: 400,
-			//Angle: 40,
+			Angle: 100,
 			Scale: 1,
 			Img:   crate,
-		}, {
+		}, &Sprite{
+			X: 400, Y: 400,
+			Angle: 40,
+			Scale: 1,
+			Img:   crate,
+		}, &Sprite{
 			X: 500, Y: 200,
 			Angle: 0,
-			Scale: 4,
+			Scale: 1,
 			Img:   crate,
 		},
 	}
 
 	player := Sprite{
-		X: -100, Y: -100,
 		Img:   dummy,
 		Angle: 0,
 		Scale: 1,
@@ -88,7 +90,7 @@ func (g *Game) Update() error {
 	// do collision
 	for _, v := range g.obstacles {
 
-		bb := NewBoundingBoxFromSprite(&v)
+		bb := NewBoundingBoxFromSprite(v)
 
 		switch g.collisionType {
 		case COLLISION_AABB:
@@ -123,6 +125,23 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			c.ChangeHSV(20, 11, 20)
 			colorm.DrawImage(screen, v.Img, c, op)
 		}
+
+		ebitenutil.DebugPrint(screen, fmt.Sprintf("collision detected: %v", v.CollisionDetected))
+	}
+
+	// draw rect around the obstacles
+	gray := color.RGBA{100, 100, 100, 100}
+	for _, o := range g.obstacles {
+		bb := NewBoundingBoxFromSprite(o)
+
+		// lt, rt, rb, lb
+		vertices := bb.Vertices()
+		lt, rt, rb, lb := vertices[0], vertices[1], vertices[2], vertices[3]
+		vector.StrokeLine(screen, float32(lt.X), float32(lt.Y), float32(rt.X), float32(rt.Y), 2, gray, false)
+		vector.StrokeLine(screen, float32(rt.X), float32(rt.Y), float32(rb.X), float32(rb.Y), 2, gray, false)
+		vector.StrokeLine(screen, float32(rb.X), float32(rb.Y), float32(lb.X), float32(lb.Y), 2, gray, false)
+		vector.StrokeLine(screen, float32(lb.X), float32(lb.Y), float32(lt.X), float32(lt.Y), 2, gray, false)
+
 	}
 
 	// draw mouse following sprite
