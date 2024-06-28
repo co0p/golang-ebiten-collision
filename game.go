@@ -47,17 +47,17 @@ func NewGame(ct string) *Game {
 	sprites := []*Sprite{
 		&Sprite{
 			X: 100, Y: 100,
-			Angle: 100,
+			// Angle: 100,
 			Scale: 1,
 			Img:   crate,
 		}, &Sprite{
 			X: 400, Y: 400,
-			Angle: 40,
+			// Angle: 40,
 			Scale: 1,
 			Img:   crate,
 		}, &Sprite{
 			X: 500, Y: 200,
-			Angle: 0,
+			// Angle: 0,
 			Scale: 1,
 			Img:   crate,
 		},
@@ -149,12 +149,17 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	op.GeoM.Scale(g.player.Scale, g.player.Scale)
 	op.GeoM.Rotate(g.player.Angle)
 
-	px, py := g.player.X, g.player.Y
-	px -= g.player.Width() / 2
-	py -= g.player.Height() / 2
-
-	op.GeoM.Translate(px, py)
+	op.GeoM.Translate(g.player.X, g.player.Y)
 	screen.DrawImage(g.player.Img, op)
+
+	red := color.RGBA{255, 50, 50, 100}
+	bb := NewBoundingBoxFromSprite(&g.player)
+	vertices := bb.Vertices()
+	lt, rt, rb, lb := vertices[0], vertices[1], vertices[2], vertices[3]
+	vector.StrokeLine(screen, float32(lt.X), float32(lt.Y), float32(rt.X), float32(rt.Y), 2, red, false)
+	vector.StrokeLine(screen, float32(rt.X), float32(rt.Y), float32(rb.X), float32(rb.Y), 2, red, false)
+	vector.StrokeLine(screen, float32(rb.X), float32(rb.Y), float32(lb.X), float32(lb.Y), 2, red, false)
+	vector.StrokeLine(screen, float32(lb.X), float32(lb.Y), float32(lt.X), float32(lt.Y), 2, red, false)
 
 }
 

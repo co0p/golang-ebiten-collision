@@ -41,5 +41,6 @@ func collisionDetectionAABB(a boundingBox, b boundingBox) bool {
 }
 
 func collisionDetectionLine(a boundingBox, b boundingBox) bool {
+	// TODO
 	return false
 }
